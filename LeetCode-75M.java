@@ -28,9 +28,9 @@ class Solution {
         }
     }
         private void swap(int nums[], int x,int y){
-            int temp = x ;
+            int temp = nums[x] ;
             nums[x] = nums[y] ;
-            nums[y] = nums[temp] ;
+            nums[y] = temp ;
 
         }
 }
