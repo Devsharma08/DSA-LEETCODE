@@ -24,4 +24,4 @@ class Solution {
         boolean isPositive = dividend<0 ^ divisor<0;
         return isPositive==false ? (int)result : -1*(int)result;
     }
-}
+}L
