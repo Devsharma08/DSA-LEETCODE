@@ -1,42 +1,50 @@
 class Solution {
     public int networkDelayTime(int[][] times, int n, int k) {
-        Map<Integer, List<int[]>> adj = new HashMap<>();
-        for (int[] time : times) {
-            adj.computeIfAbsent(time[0], x -> new ArrayList<>()).add(new int[]{time[1], time[2]});
+        Map<Integer, List<int[]>> hash = new HashMap<>();
+        for (int[] temp : times) {
+            hash.computeIfAbsent(temp[0], e -> new ArrayList<>()).add(new int[] { temp[1], temp[2] });
         }
 
-        PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[1] - b[1]);
-        pq.add(new int[]{k, 0});
+        int[] weight = new int[n + 1];
+        Arrays.fill(weight, Integer.MAX_VALUE);
 
-        int[] dists = new int[n + 1];
-        Arrays.fill(dists, Integer.MAX_VALUE);
-        dists[k] = 0;
+        weight[k] = 0;
+        PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[1] - b[1]);
+        // add node and it's weight
+        pq.offer(new int[] { k, 0 });
 
         while (!pq.isEmpty()) {
-            int[] current = pq.poll();
-            int u = current[0];
-            int d = current[1];
+            int[] temp = pq.remove();
+            int node = temp[0];
+            int nodeWeight = temp[1];
 
-            if (d > dists[u]) continue;
+            if(weight[node] < nodeWeight) continue;
 
-            if (adj.containsKey(u)) {
-                for (int[] neighbor : adj.get(u)) {
-                    int v = neighbor[0];
-                    int weight = neighbor[1];
-                 
-                    if (dists[u] + weight < dists[v]) {
-                        dists[v] = dists[u] + weight;
-                        pq.add(new int[]{v, dists[v]});
+            if (weight[node] > nodeWeight) {
+                weight[node] = nodeWeight;
+            }
+            if (hash.containsKey(node)) {
+                for (int i = 0; hash.get(node).size() > i; i++) {
+                    int[] in = hash.get(node).get(i);
+                    int a = in[0];
+                    int b = in[1];
+
+                    if (weight[a] > nodeWeight + b) {
+                        weight[a] = nodeWeight + b;
+                        pq.offer(new int[]{a,weight[a]});
                     }
                 }
             }
         }
-        int maxDelay = 0;
-        for (int i = 1; i <= n; i++) {
-            if (dists[i] == Integer.MAX_VALUE) return -1;
-            maxDelay = Math.max(maxDelay, dists[i]);
-        }
 
-        return maxDelay;
+        int max = -1;
+        for (int i = 1; n + 1 > i; i++) {
+            if (weight[i] == Integer.MAX_VALUE) {
+                return -1;
+            }
+            max = Math.max(weight[i], max);
+        }
+        return max;
+
     }
 }
