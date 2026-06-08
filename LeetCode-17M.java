@@ -1,34 +1,26 @@
 class Solution {
-    public int threeSumClosest(int[] nums, int target) {
-        Arrays.sort(nums);
+    private final String[] str = new String[] {
+            "", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"
+    };
 
-        int l = nums.length;
-        int minSum = nums[0] + nums[1] + nums[2];
+    public List<String> letterCombinations(String digits) {
+        List<String> result = new ArrayList<>();
+        if (digits == null || digits.isEmpty()) return result;
+        backtrack(result, digits, new StringBuilder(), str,0);
+        return result;
+    }
 
-        for( int i = 0 ; l - 2 > i ; i++ ){
-            int left = i+1 ;
-            int right = l-1;
-
-            while(left < right){
-                int sum = nums[i]+nums[right]+nums[left];
-
-                if(target==sum){
-                    return sum;
-                }
-
-                if(Math.abs(target-minSum) > Math.abs(target-sum)) {
-                    minSum = sum;
-                }
-                if(sum>target){
-                    right--;
-                } else{
-                    left++;
-                }
-
-            }
+    public void backtrack(List<String> result, String digit, StringBuilder t, String[] str, int ind) {
+        // int l = digit % 10;
+        if (ind == digit.length()) {
+            result.add(t.toString());
+            return;
         }
-
-        return minSum;
-
+        int currDigit = digit.charAt(ind) - '0';
+        String tempStr = str[currDigit];
+        for (int j = 0; tempStr.length() > j; j++) {
+            backtrack(result,digit, t.append(tempStr.charAt(j)), str,ind+1);
+            t.deleteCharAt(t.length() - 1);
+        }
     }
 }
