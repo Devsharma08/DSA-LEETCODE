@@ -1,0 +1,105 @@
+Problem Statement
+Given a sequence of N non-negative integers a[1..N], answer Q queries. Each
+query contains l, r, and x; print the maximum value of a[i] XOR x for every
+index i in the inclusive range [l, r].
+
+Constraints
+1 <= N, Q <= 2 * 10^5
+0 <= a[i], x <= 10^9
+1 <= l <= r <= N
+
+// ***********  SOLUTION  ***********
+
+import java.util.*;
+
+public class Main {
+    private static final int MAX_BIT = 30;
+
+    private static class PersistentTrie {
+        private final int[] left;
+        private final int[] right;
+        private final int[] count;
+        private int nodes = 1;
+
+        PersistentTrie(int capacity) {
+            left = new int[capacity];
+            right = new int[capacity];
+            count = new int[capacity];
+        }
+
+        int insert(int previousRoot, int value) {
+            int newRoot = copyNode(previousRoot);
+            int current = newRoot;
+            count[current]++;
+
+            for (int bit = MAX_BIT; bit >= 0; bit--) {
+                boolean one = ((value >>> bit) & 1) != 0;
+                int previousChild = one ? right[current] : left[current];
+                int newChild = copyNode(previousChild);
+                if (one) {
+                    right[current] = newChild;
+                } else {
+                    left[current] = newChild;
+                }
+                current = newChild;
+                count[current]++;
+            }
+            return newRoot;
+        }
+
+        int maximumXor(int leftRoot, int rightRoot, int value) {
+            int answer = 0;
+            int leftNode = leftRoot;
+            int rightNode = rightRoot;
+
+            for (int bit = MAX_BIT; bit >= 0; bit--) {
+                boolean valueBit = ((value >>> bit) & 1) != 0;
+                int preferredLeft = valueBit ? left[leftNode] : right[leftNode];
+                int preferredRight = valueBit ? left[rightNode] : right[rightNode];
+
+                if (count[preferredRight] - count[preferredLeft] > 0) {
+                    answer |= 1 << bit;
+                    leftNode = preferredLeft;
+                    rightNode = preferredRight;
+                } else {
+                    leftNode = valueBit ? right[leftNode] : left[leftNode];
+                    rightNode = valueBit ? right[rightNode] : left[rightNode];
+                }
+            }
+            return answer;
+        }
+
+        private int copyNode(int source) {
+            int node = nodes++;
+            left[node] = left[source];
+            right[node] = right[source];
+            count[node] = count[source];
+            return node;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+        int[] values = new int[n + 1];
+        for (int i = 1; i <= n; i++) {
+            values[i] = scanner.nextInt();
+        }
+
+        PersistentTrie trie = new PersistentTrie(1 + n * (MAX_BIT + 2));
+        int[] roots = new int[n + 1];
+        for (int i = 1; i <= n; i++) {
+            roots[i] = trie.insert(roots[i - 1], values[i]);
+        }
+
+        StringBuilder output = new StringBuilder();
+        int queries = scanner.nextInt();
+        while (queries-- > 0) {
+            int left = scanner.nextInt();
+            int right = scanner.nextInt();
+            int x = scanner.nextInt();
+            output.append(trie.maximumXor(roots[left - 1], roots[right], x)).append('\n');
+        }
+        System.out.print(output);
+    }
+}
